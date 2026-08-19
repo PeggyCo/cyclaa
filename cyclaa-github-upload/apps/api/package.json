@@ -1,0 +1,62 @@
+{
+  "name": "@velo/api",
+  "version": "0.1.0",
+  "description": "Cyclaa Fastify backend API",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc && tsc-alias -f",
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules npx jest --watch",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "migrate": "tsx src/scripts/migrate.ts up",
+    "migrate:undo": "tsx src/scripts/migrate.ts undo",
+    "seed": "sequelize-cli db:seed:all",
+    "seed:undo": "sequelize-cli db:seed:undo:all"
+  },
+  "dependencies": {
+    "@fastify/cors": "^8.4.2",
+    "@fastify/jwt": "^7.0.0",
+    "@fastify/rate-limit": "^9.0.0",
+    "aws-sdk": "^2.1500.0",
+    "axios": "^1.6.2",
+    "bcrypt": "^5.1.1",
+    "bull": "^4.11.5",
+    "dotenv": "^16.3.1",
+    "fastify": "^4.24.3",
+    "fastify-plugin": "^4.5.1",
+    "joi": "^17.11.0",
+    "jsonwebtoken": "^9.0.2",
+    "meilisearch": "^0.35.0",
+    "pg": "^8.11.3",
+    "pg-hstore": "^2.3.4",
+    "pino": "^8.16.2",
+    "pino-pretty": "^10.2.3",
+    "redis": "^4.6.11",
+    "resend": "^1.1.0",
+    "sequelize": "^6.37.8",
+    "socket.io": "^4.7.2",
+    "stripe": "^13.10.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.10.5",
+    "@types/uuid": "^9.0.8",
+    "eslint": "^8.52.0",
+    "eslint-config-prettier": "^9.0.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.0.0",
+    "sequelize-cli": "^6.6.5",
+    "tsc-alias": "^1.9.2",
+    "ts-jest": "^29.1.1",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
