@@ -1,0 +1,33 @@
+{
+  "name": "velo-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cyclaa - The world's first fully integrated cycling platform",
+  "workspaces": [
+    "apps/api",
+    "apps/mobile-rider",
+    "apps/mobile-mechanic",
+    "packages/shared"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "api": "npm run dev --workspace=apps/api",
+    "mobile:rider": "npm run start --workspace=apps/mobile-rider",
+    "mobile:mechanic": "npm run start --workspace=apps/mobile-mechanic",
+    "db:migrate": "npm run migrate --workspace=apps/api",
+    "db:seed": "npm run seed --workspace=apps/api"
+  },
+  "devDependencies": {
+    "prettier": "^3.0.0",
+    "eslint": "^8.52.0",
+    "eslint-config-prettier": "^9.0.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}

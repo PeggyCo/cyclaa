@@ -1,0 +1,33 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Cyclaa API (Backend)",
+      "runtimeExecutable": "/bin/zsh",
+      "runtimeArgs": ["-c", "export PATH=/opt/homebrew/bin:$PATH && npm run dev"],
+      "port": 3000,
+      "cwd": "/Users/peggycoppola/Desktop/VELO App Design/apps/api"
+    },
+    {
+      "name": "Cyclaa Mobile (Expo)",
+      "runtimeExecutable": "/bin/zsh",
+      "runtimeArgs": ["-c", "export PATH=/opt/homebrew/bin:$PATH && npm start"],
+      "port": 8081,
+      "cwd": "/Users/peggycoppola/Desktop/VELO App Design/apps/mobile-rider"
+    },
+    {
+      "name": "Cyclaa Mechanic (Expo)",
+      "runtimeExecutable": "/bin/zsh",
+      "runtimeArgs": ["-c", "export PATH=/opt/homebrew/bin:$PATH && npm start"],
+      "port": 8082,
+      "cwd": "/Users/peggycoppola/Desktop/VELO App Design/apps/mobile-mechanic"
+    },
+    {
+      "name": "Cyclaa Website",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8080"],
+      "port": 8080,
+      "cwd": "/Users/peggycoppola/Desktop/VELO App Design/apps/website"
+    }
+  ]
+}

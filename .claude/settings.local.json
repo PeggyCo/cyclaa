@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pandoc \"VELO Business Plan 3-19-26.docx\" -t plain)",
+      "Bash(python3 -m markitdown \"VELO Pitch Deck 3-19-26.pptx\")",
+      "Bash(python3:*)",
+      "Bash(npm --version)",
+      "Bash(/opt/homebrew/bin/npm --version)",
+      "Bash(/usr/local/bin/npm --version)",
+      "Read(//usr/local/**)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(cd /Users/peggycoppola/Desktop/VELO App Design/apps/api)",
+      "Bash(/opt/homebrew/bin/npm install:*)",
+      "Bash(export PATH=\"/opt/homebrew/bin:$PATH\")",
+      "Bash(npm install:*)",
+      "Bash(export PATH=/opt/homebrew/bin:$PATH)",
+      "Bash(curl -v http://localhost:3000/health)",
+      "Bash(curl -s http://localhost:3000/health)",
+      "Bash(curl -s http://localhost:8080)",
+      "Bash(pkill -f \"python3 -m http.server 8080\")",
+      "Bash(xargs kill:*)"
+    ]
+  }
+}
