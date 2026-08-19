@@ -4,18 +4,52 @@
  */
 
 import { Resend } from 'resend';
+import { config } from '@config/env';
+import { logger } from '@utils/logger';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM_EMAIL = 'hello@cyclaa.app';
+const RESEND_API_KEY = config.notifications.resend.apiKey;
+const IS_PLACEHOLDER_KEY = !RESEND_API_KEY || RESEND_API_KEY === 'your-resend-api-key';
+
+const resend = new Resend(IS_PLACEHOLDER_KEY ? 're_dev_placeholder' : RESEND_API_KEY);
+const FROM_EMAIL = config.notifications.resend.fromEmail;
 const APP_URL = process.env.APP_URL || 'https://cyclaa.app';
 
+if (IS_PLACEHOLDER_KEY) {
+  logger.warn(
+    'RESEND_API_KEY is not set (or still the placeholder value) — emails will be logged instead of sent. Set a real key from https://resend.com/api-keys in apps/api/.env to enable delivery.'
+  );
+}
+
 export class EmailService {
+  /**
+   * Wraps resend.emails.send: in dev without a real API key, logs the email
+   * instead of attempting a network call that would just fail with a 401.
+   */
+  private static async deliver(payload: { to: string; subject: string; html: string }) {
+    if (IS_PLACEHOLDER_KEY) {
+      logger.info(
+        { to: payload.to, subject: payload.subject },
+        '[EmailService] RESEND_API_KEY not configured — email NOT sent (logged only)'
+      );
+      return { success: true, skipped: true };
+    }
+
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: payload.to,
+      subject: payload.subject,
+      html: payload.html,
+    });
+    return { success: true };
+  }
+
   // Send confirmation email
   static async sendConfirmationEmail(
     email: string,
     name: string | null,
     confirmationToken: string,
-    position: number
+    position: number,
+    referralCode: string
   ) {
     const confirmUrl = `${APP_URL}/confirm?token=${confirmationToken}`;
     const userName = name ? name.split(' ')[0] : 'there';
@@ -63,7 +97,7 @@ export class EmailService {
                 <h3 style="margin-top: 0;">Invite Friends & Move Up</h3>
                 <p>Want to jump ahead in the queue? Share your referral link with friends—each person who signs up moves you up 5 spots:</p>
                 <p style="font-family: monospace; background: white; padding: 10px; border-radius: 4px; word-break: break-all;">
-                  ${APP_URL}?ref=${email}
+                  ${APP_URL}?ref=${referralCode}
                 </p>
               </div>
 
@@ -80,18 +114,11 @@ export class EmailService {
       </html>
     `;
 
-    try {
-      await resend.emails.send({
-        from: FROM_EMAIL,
-        to: email,
-        subject: `You're #${position} on the Cyclaa waitlist 🚴`,
-        html,
-      });
-      return { success: true };
-    } catch (error) {
-      console.error('Email send failed:', error);
-      throw error;
-    }
+    return this.deliver({
+      to: email,
+      subject: `You're #${position} on the Cyclaa waitlist 🚴`,
+      html,
+    });
   }
 
   // Send position update email
@@ -135,18 +162,11 @@ export class EmailService {
       </html>
     `;
 
-    try {
-      await resend.emails.send({
-        from: FROM_EMAIL,
-        to: email,
-        subject: `You're now #${newPosition} on the Cyclaa waitlist!`,
-        html,
-      });
-      return { success: true };
-    } catch (error) {
-      console.error('Email send failed:', error);
-      throw error;
-    }
+    return this.deliver({
+      to: email,
+      subject: `You're now #${newPosition} on the Cyclaa waitlist!`,
+      html,
+    });
   }
 
   // Send access granted email
@@ -189,17 +209,10 @@ export class EmailService {
       </html>
     `;
 
-    try {
-      await resend.emails.send({
-        from: FROM_EMAIL,
-        to: email,
-        subject: 'Cyclaa is here! Your early access is ready 🚴',
-        html,
-      });
-      return { success: true };
-    } catch (error) {
-      console.error('Email send failed:', error);
-      throw error;
-    }
+    return this.deliver({
+      to: email,
+      subject: 'Cyclaa is here! Your early access is ready 🚴',
+      html,
+    });
   }
 }

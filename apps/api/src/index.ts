@@ -6,15 +6,11 @@
 import Fastify from 'fastify';
 import fastifyJwt from '@fastify/jwt';
 import fastifyCors from '@fastify/cors';
+import fastifyRateLimit from '@fastify/rate-limit';
 import { config } from '@config/env';
 import { logger } from '@utils/logger';
-
-// Routes
-import { waitlistRoutes } from '@routes/waitlist';
-// TODO: Import other routes when created
-// import authRoutes from '@routes/auth';
-// import userRoutes from '@routes/users';
-// import bookingRoutes from '@routes/bookings';
+import { initializeDatabase } from './database/index';
+import authPlugin from '@middleware/auth';
 
 // TODO: Socket.io integration for real-time features (bookings, GPS tracking, chat)
 
@@ -34,10 +30,30 @@ async function start() {
     sign: { expiresIn: config.jwt.expirySeconds },
   });
 
+  await fastify.register(fastifyRateLimit, {
+    global: false, // opt-in per route
+  });
+
+  await fastify.register(authPlugin);
+
   // Health check
   fastify.get('/health', async (request, reply) => {
     return { status: 'ok', timestamp: new Date().toISOString() };
   });
+
+  // Initialize the database connection BEFORE importing anything that touches
+  // models. Model files call getDatabase() at module load time, so importing
+  // them (even transitively, via routes/controllers) before the connection
+  // exists throws "Database not initialized".
+  await initializeDatabase();
+
+  // Routes (dynamically imported so their model imports resolve after the DB
+  // connection is ready — see note above)
+  const { waitlistRoutes } = await import('@routes/waitlist');
+  // TODO: Import other routes when created
+  // const { authRoutes } = await import('@routes/auth');
+  // const { userRoutes } = await import('@routes/users');
+  // const { bookingRoutes } = await import('@routes/bookings');
 
   // Register routes
   await fastify.register(waitlistRoutes, { prefix: '/api' });

@@ -13,8 +13,11 @@ export async function up(queryInterface: QueryInterface) {
   // This stores mechanic's service location as a point
   await queryInterface.sequelize.query(`
     ALTER TABLE "MechanicProfiles"
-    ADD COLUMN IF NOT EXISTS location geometry(Point, 4326)
-    COMMENT 'PostGIS point: (latitude, longitude) in EPSG:4326 (WGS84)';
+    ADD COLUMN IF NOT EXISTS location geometry(Point, 4326);
+  `);
+  await queryInterface.sequelize.query(`
+    COMMENT ON COLUMN "MechanicProfiles".location
+    IS 'PostGIS point: (latitude, longitude) in EPSG:4326 (WGS84)';
   `);
 
   // Create spatial index on MechanicProfiles location
@@ -27,8 +30,11 @@ export async function up(queryInterface: QueryInterface) {
   // Create geometry column in Bookings for service location
   await queryInterface.sequelize.query(`
     ALTER TABLE "Bookings"
-    ADD COLUMN IF NOT EXISTS service_location_geom geometry(Point, 4326)
-    COMMENT 'PostGIS point of service location for proximity queries';
+    ADD COLUMN IF NOT EXISTS service_location_geom geometry(Point, 4326);
+  `);
+  await queryInterface.sequelize.query(`
+    COMMENT ON COLUMN "Bookings".service_location_geom
+    IS 'PostGIS point of service location for proximity queries';
   `);
 
   // Create spatial index on Bookings service location
@@ -41,8 +47,11 @@ export async function up(queryInterface: QueryInterface) {
   // Create geometry column in Rides for meeting point
   await queryInterface.sequelize.query(`
     ALTER TABLE "Rides"
-    ADD COLUMN IF NOT EXISTS meeting_point_geom geometry(Point, 4326)
-    COMMENT 'PostGIS point of ride meeting location';
+    ADD COLUMN IF NOT EXISTS meeting_point_geom geometry(Point, 4326);
+  `);
+  await queryInterface.sequelize.query(`
+    COMMENT ON COLUMN "Rides".meeting_point_geom
+    IS 'PostGIS point of ride meeting location';
   `);
 
   // Create spatial index on Rides meeting point

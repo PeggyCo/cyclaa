@@ -3,10 +3,87 @@
  * Tracks early access signups with referral tracking
  */
 
-import { DataTypes, QueryInterface } from 'sequelize';
+import { DataTypes, Model, Optional } from 'sequelize';
+import { getDatabase } from '../database';
 
-export async function up(queryInterface: QueryInterface) {
-  await queryInterface.createTable('Waitlists', {
+export enum WaitlistBorough {
+  MANHATTAN = 'manhattan',
+  BROOKLYN = 'brooklyn',
+  QUEENS = 'queens',
+  BRONX = 'bronx',
+  STATEN_ISLAND = 'staten_island',
+  OTHER = 'other',
+}
+
+export enum WaitlistSource {
+  WEBSITE = 'website',
+  APP = 'app',
+  SOCIAL = 'social',
+  OTHER = 'other',
+}
+
+export interface WaitlistAttributes {
+  id: string;
+  email: string;
+  name?: string;
+  borough: WaitlistBorough;
+  referralCode?: string;
+  referredBy?: string;
+  position?: number;
+  emailConfirmed: boolean;
+  confirmationToken?: string;
+  confirmationSentAt?: Date;
+  confirmedAt?: Date;
+  referralCount: number;
+  accessGranted: boolean;
+  accessGrantedAt?: Date;
+  source: WaitlistSource;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface WaitlistCreationAttributes
+  extends Optional<
+    WaitlistAttributes,
+    | 'id'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'emailConfirmed'
+    | 'referralCount'
+    | 'accessGranted'
+    | 'borough'
+    | 'source'
+  > {}
+
+export class Waitlist
+  extends Model<WaitlistAttributes, WaitlistCreationAttributes>
+  implements WaitlistAttributes
+{
+  public id!: string;
+  public email!: string;
+  public name?: string;
+  public borough!: WaitlistBorough;
+  public referralCode?: string;
+  public referredBy?: string;
+  public position?: number;
+  public emailConfirmed!: boolean;
+  public confirmationToken?: string;
+  public confirmationSentAt?: Date;
+  public confirmedAt?: Date;
+  public referralCount!: number;
+  public accessGranted!: boolean;
+  public accessGrantedAt?: Date;
+  public source!: WaitlistSource;
+  public createdAt?: Date;
+  public updatedAt?: Date;
+
+  // Convenience helper used by the referral increment flow
+  public increment: any;
+  public save!: () => Promise<this>;
+}
+
+Waitlist.init(
+  {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -23,8 +100,8 @@ export async function up(queryInterface: QueryInterface) {
       allowNull: true,
     },
     borough: {
-      type: DataTypes.ENUM('manhattan', 'brooklyn', 'queens', 'bronx', 'staten_island', 'other'),
-      defaultValue: 'other',
+      type: DataTypes.ENUM(...Object.values(WaitlistBorough)),
+      defaultValue: WaitlistBorough.OTHER,
     },
     referralCode: {
       type: DataTypes.STRING,
@@ -74,20 +151,20 @@ export async function up(queryInterface: QueryInterface) {
       allowNull: true,
     },
     source: {
-      type: DataTypes.ENUM('website', 'app', 'social', 'other'),
-      defaultValue: 'website',
+      type: DataTypes.ENUM(...Object.values(WaitlistSource)),
+      defaultValue: WaitlistSource.WEBSITE,
     },
-    createdAt: DataTypes.DATE,
-    updatedAt: DataTypes.DATE,
-  });
+  },
+  {
+    sequelize: getDatabase(),
+    tableName: 'Waitlists',
+    indexes: [
+      { fields: ['email'] },
+      { fields: ['referralCode'] },
+      { fields: ['borough'] },
+      { fields: ['position'] },
+    ],
+  }
+);
 
-  // Index for faster lookups
-  await queryInterface.addIndex('Waitlists', ['email']);
-  await queryInterface.addIndex('Waitlists', ['referralCode']);
-  await queryInterface.addIndex('Waitlists', ['borough']);
-  await queryInterface.addIndex('Waitlists', ['position']);
-}
-
-export async function down(queryInterface: QueryInterface) {
-  await queryInterface.dropTable('Waitlists');
-}
+export default Waitlist;

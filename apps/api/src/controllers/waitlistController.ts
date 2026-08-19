@@ -5,6 +5,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { Sequelize } from 'sequelize';
+import { Waitlist } from '@models/Waitlist';
 
 interface WaitlistEntry {
   email: string;
@@ -25,16 +26,14 @@ export class WaitlistController {
     const { email, name, borough = 'other', referredBy, source = 'website' } = data;
 
     // Check if email already exists
-    const existing = await (global as any).sequelize.models.Waitlist.findOne({
-      where: { email },
-    });
+    const existing = await Waitlist.findOne({ where: { email } });
 
     if (existing) {
       throw new Error('EMAIL_ALREADY_REGISTERED');
     }
 
     // Get current position (total count + 1)
-    const count = await (global as any).sequelize.models.Waitlist.count();
+    const count = await Waitlist.count();
     const position = count + 1;
 
     // Create confirmation token
@@ -44,9 +43,7 @@ export class WaitlistController {
     // Parse referred by if it's a referral code
     let referredById = null;
     if (referredBy) {
-      const referrer = await (global as any).sequelize.models.Waitlist.findOne({
-        where: { referralCode: referredBy },
-      });
+      const referrer = await Waitlist.findOne({ where: { referralCode: referredBy } });
       if (referrer) {
         referredById = referrer.id;
         // Increment referrer's count
@@ -55,16 +52,16 @@ export class WaitlistController {
     }
 
     // Create waitlist entry
-    const entry = await (global as any).sequelize.models.Waitlist.create({
+    const entry = await Waitlist.create({
       email,
       name,
-      borough,
-      referredBy: referredById,
+      borough: borough as any,
+      referredBy: referredById as any,
       position,
       referralCode,
       confirmationToken,
       confirmationSentAt: new Date(),
-      source,
+      source: source as any,
     });
 
     return {
@@ -72,14 +69,13 @@ export class WaitlistController {
       email: entry.email,
       position: entry.position,
       referralCode: entry.referralCode,
+      confirmationToken: entry.confirmationToken,
     };
   }
 
   // Confirm email
   static async confirmEmail(token: string) {
-    const entry = await (global as any).sequelize.models.Waitlist.findOne({
-      where: { confirmationToken: token },
-    });
+    const entry = await Waitlist.findOne({ where: { confirmationToken: token } });
 
     if (!entry) {
       throw new Error('INVALID_TOKEN');
@@ -102,16 +98,9 @@ export class WaitlistController {
 
   // Get waitlist entry by referral code
   static async getByReferralCode(referralCode: string) {
-    const entry = await (global as any).sequelize.models.Waitlist.findOne({
+    const entry = await Waitlist.findOne({
       where: { referralCode },
-      attributes: [
-        'email',
-        'name',
-        'position',
-        'referralCode',
-        'referralCount',
-        'emailConfirmed',
-      ],
+      attributes: ['email', 'name', 'position', 'referralCode', 'referralCount', 'emailConfirmed'],
     });
 
     if (!entry) {
@@ -123,15 +112,10 @@ export class WaitlistController {
 
   // Get waitlist stats
   static async getStats() {
-    const total = await (global as any).sequelize.models.Waitlist.count();
-    const confirmed = await (global as any).sequelize.models.Waitlist.count({
-      where: { emailConfirmed: true },
-    });
-    const byBorough = await (global as any).sequelize.models.Waitlist.findAll({
-      attributes: [
-        'borough',
-        [Sequelize.fn('COUNT', Sequelize.col('id')), 'count'],
-      ],
+    const total = await Waitlist.count();
+    const confirmed = await Waitlist.count({ where: { emailConfirmed: true } });
+    const byBorough = await Waitlist.findAll({
+      attributes: ['borough', [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']],
       group: ['borough'],
       raw: true,
     });
@@ -145,9 +129,7 @@ export class WaitlistController {
 
   // Grant access to user
   static async grantAccess(email: string) {
-    const entry = await (global as any).sequelize.models.Waitlist.findOne({
-      where: { email },
-    });
+    const entry = await Waitlist.findOne({ where: { email } });
 
     if (!entry) {
       throw new Error('NOT_FOUND');

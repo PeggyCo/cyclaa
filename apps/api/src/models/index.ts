@@ -21,6 +21,7 @@ import ConversationParticipant from './ConversationParticipant';
 import Message from './Message';
 import Notification from './Notification';
 import DeviceToken from './DeviceToken';
+import Waitlist from './Waitlist';
 
 // User associations
 User.hasOne(RiderProfile, { foreignKey: 'userId', as: 'riderProfile' });
@@ -119,6 +120,10 @@ Notification.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 User.hasMany(DeviceToken, { foreignKey: 'userId', as: 'deviceTokens' });
 DeviceToken.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
+// Waitlist associations (self-referential referral chain)
+Waitlist.hasMany(Waitlist, { foreignKey: 'referredBy', as: 'referrals' });
+Waitlist.belongsTo(Waitlist, { foreignKey: 'referredBy', as: 'referrer' });
+
 export {
   User,
   RiderProfile,
@@ -138,4 +143,5 @@ export {
   Message,
   Notification,
   DeviceToken,
+  Waitlist,
 };

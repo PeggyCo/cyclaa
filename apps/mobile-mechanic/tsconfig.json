@@ -1,5 +1,5 @@
 {
-  "extends": "expo/tsconfig",
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
     "skipLibCheck": true,
@@ -19,7 +19,7 @@
       "@constants/*": ["./constants/*"],
       "@hooks/*": ["./hooks/*"],
       "@types/*": ["./types/*"],
-      "@shared/*": ["../../packages/shared/src/*"]
+      "@shared/*": ["../../../packages/shared/src/*"]
     }
   },
   "include": ["src", "index.js"],

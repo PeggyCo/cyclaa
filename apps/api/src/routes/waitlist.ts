@@ -12,6 +12,12 @@ export async function waitlistRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/waitlist',
     {
+      config: {
+        rateLimit: {
+          max: 5,
+          timeWindow: '1 minute',
+        },
+      },
       schema: {
         body: {
           type: 'object',
@@ -42,7 +48,13 @@ export async function waitlistRoutes(fastify: FastifyInstance) {
         });
 
         // Send confirmation email
-        await EmailService.sendConfirmationEmail(email, name || null, entry.id, entry.position);
+        await EmailService.sendConfirmationEmail(
+          email,
+          name || null,
+          entry.confirmationToken as string,
+          entry.position as number,
+          entry.referralCode as string
+        );
 
         return reply.status(201).send({
           success: true,
@@ -183,7 +195,7 @@ export async function waitlistRoutes(fastify: FastifyInstance) {
         const entry = await WaitlistController.grantAccess(email);
 
         // Send access granted email
-        await EmailService.sendAccessGrantedEmail(email, entry.name);
+        await EmailService.sendAccessGrantedEmail(email, entry.name ?? null);
 
         return reply.send({
           success: true,
