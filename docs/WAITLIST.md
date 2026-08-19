@@ -308,17 +308,27 @@ curl -X POST http://localhost:3000/api/waitlist \
 
 - Validation: Email format check, no SQL injection
 - Tokens: UUID-based confirmation tokens (unguessable)
-- Rate limiting: Should be added per IP
+- Rate limiting: 5 requests/minute per IP on `POST /waitlist` (`@fastify/rate-limit`)
 - CORS: Set appropriate origins for website
-- Admin auth: Requires JWT token for access grant endpoint
+- Admin auth: Requires JWT token for access grant endpoint (`fastify.authenticate`, `src/middleware/auth.ts`)
 
 ## Files
 
-- Migration: `apps/api/src/models/Waitlist.ts`
+- Migration: `apps/api/src/migrations/009_create_waitlist.ts`
+- Model: `apps/api/src/models/Waitlist.ts`
 - Controller: `apps/api/src/controllers/waitlistController.ts`
 - Routes: `apps/api/src/routes/waitlist.ts`
 - Email: `apps/api/src/services/emailService.ts`
+- Tests: `apps/api/src/__tests__/waitlist.test.ts`
 - Frontend: `apps/website/index.html` (form + handler)
+
+## Running migrations
+
+`npm run migrate` (in `apps/api`) does **not** use `sequelize-cli` — this
+project is ESM + TypeScript migrations, which the CLI can't load directly.
+It uses a small custom runner instead: `apps/api/src/scripts/migrate.ts`,
+tracking applied migrations in a `SequelizeMeta` table just like the CLI
+would. `npm run migrate:undo` rolls back the most recent one.
 
 ---
 
