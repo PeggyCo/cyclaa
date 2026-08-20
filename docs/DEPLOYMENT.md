@@ -118,11 +118,32 @@ dev, set it in a `.env` file per Expo's `EXPO_PUBLIC_*` convention).
   the PostGIS extension available before running migration `008`.
 - **Redis/Meilisearch**: configured in `docker-compose.yml` for local dev
   and referenced in `.env.example`, but nothing in the API currently uses
-  them (no routes beyond `/waitlist` are built yet). Add them to your
-  hosting provider when the routes that need them land.
-- **Auth routes**: the mobile apps' login/signup screens call
-  `POST /auth/login` and `POST /auth/register`, which don't exist on the
-  backend yet (only `/api/waitlist` is implemented). Build those next.
+  them. Add them to your hosting provider when routes that need them
+  (real-time booking updates, search) land.
+- **No admin-review flow for mechanics**: `POST /auth/register` with
+  `role: "mechanic"` activates the mechanic immediately (see the comment
+  in `authController.ts`) rather than leaving them in the migration's
+  default `pending_review` status, since there's no admin screen yet to
+  approve them. Revisit before a real launch — mechanics should go
+  through a background-check/insurance review before taking bookings.
+- **No bike-management UI**: `POST /bookings` auto-creates a placeholder
+  "My bike" for a rider who doesn't have one yet (see
+  `BookingController.resolveDefaultBike`), since there's no bike list/add
+  screen in the mobile app. Build that screen and this workaround can go.
+- **Booking matching is manual only**: `POST /bookings` requires an
+  explicit `mechanicId` (from `GET /mechanics` search) — there's no
+  automatic matching/dispatch when a rider requests a service without
+  picking a mechanic first (`bookingType: PENDING_MATCH` bookings just
+  sit unmatched).
+- **No real-time updates**: booking status changes (accept/decline/etc)
+  require the mobile app to pull-to-refresh or re-navigate; there's no
+  push notification or websocket to tell the other party immediately.
+- **Payments aren't wired up**: `Booking.quotedPrice`/`finalPrice` are
+  set from the service catalog, but nothing calls Stripe — no charge is
+  actually taken and no mechanic payout happens.
 - **Expo SDK 49**: `expo-doctor` flags this as targeting an Android API
   level that Google Play will stop accepting new submissions for. Worth
   planning an upgrade to SDK 50+ before a real store submission.
+
+See `docs/API.md` for the full list of endpoints now implemented (auth,
+mechanics, bookings, service types, waitlist).
