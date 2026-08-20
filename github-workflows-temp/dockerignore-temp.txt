@@ -1,0 +1,14 @@
+node_modules
+**/node_modules
+**/dist
+**/.expo
+**/.git
+**/*.log
+apps/mobile-rider
+apps/mobile-mechanic
+apps/website
+docs
+.env
+**/.env
+!.env.example
+!**/.env.example
